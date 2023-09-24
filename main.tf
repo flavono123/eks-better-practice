@@ -6,6 +6,21 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.17.0"
     }
+
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.23.0"
+    }
+  }
+}
+
+provider "kubernetes" {
+  host                   = module.ebp_eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.ebp_eks.cluster_certificate_authority_data)
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    args        = ["eks", "get-token", "--cluster-name", module.ebp_eks.cluster_name]
+    command     = "aws"
   }
 }
 
@@ -92,7 +107,29 @@ module "ebp_eks" {
     }
   }
 
+  manage_aws_auth_configmap = true
+  aws_auth_roles = [
+    {
+      rolearn  = module.karpenter.role_arn
+      username = "system:node:{{EC2PrivateDNSName}}"
+      groups = [
+        "system:bootstrappers",
+        "system:nodes",
+      ]
+    }
+  ]
+
   tags = {
     Name = local.cluster_name
   }
+}
+
+module "karpenter" {
+  source  = "terraform-aws-modules/eks/aws//modules/karpenter"
+  version = "~> 19.16.0"
+
+  cluster_name = module.ebp_eks.cluster_name
+
+  irsa_oidc_provider_arn          = module.ebp_eks.oidc_provider_arn
+  irsa_namespace_service_accounts = ["karpenter:karpenter"]
 }
