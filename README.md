@@ -23,3 +23,17 @@ sed -i s%$(aws eks describe-cluster --name $CLUSTER_NAME | jq -r .cluster.arn | 
 k ctx -d $AWS_PROFILE@$CLUSTER_NAME
 ```
 
+## Roadmap
+
+Implement [EKS workshop](https://www.eksworkshop.com/)'s each part
+
+- [Fundamentals](https://www.eksworkshop.com/docs/fundamentals/)
+  - [x] [Fargate](https://www.eksworkshop.com/docs/fundamentals/fargate/)
+  - [ ] [AWS Load Balancer Controller](https://www.eksworkshop.com/docs/fundamentals/exposing/aws-lb-controller)
+  - [Storage](https://www.eksworkshop.com/docs/fundamentals/storage/)
+    - [ ] [EBS](https://www.eksworkshop.com/docs/fundamentals/storage/ebs/)
+    - [ ] [EFS](https://www.eksworkshop.com/docs/fundamentals/storage/efs/)
+- [Autoscaling](https://www.eksworkshop.com/docs/autoscaling/)
+  - [ ] [Karpenter](https://www.eksworkshop.com/docs/autoscaling/compute/karpenter/)
+  - [ ] [Horizontal Pod Autoscaler](https://www.eksworkshop.com/docs/autoscaling/workloads/horizontal-pod-autoscaler/)
+  - [ ] [Cluster Proportional Autoscaler](https://www.eksworkshop.com/docs/autoscaling/workloads/cluster-proportional-autoscaler/)
