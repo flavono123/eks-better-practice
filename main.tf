@@ -12,6 +12,7 @@ terraform {
 data "aws_availability_zones" "available" {}
 
 locals {
+  # VPC
   vpc_name        = "ebp-vpc"
   azs             = slice(data.aws_availability_zones.available.names, 0, 2)
   vpc_cidr        = "10.0.0.0/16"
@@ -19,8 +20,13 @@ locals {
   private_subnets = cidrsubnets(local.partition[0], 2, 2)
   public_subnets  = cidrsubnets(local.partition[1], 2, 2)
 
+  # EKS
   cluster_name    = "ebp-eks"
   cluster_version = "1.27"
+  fargate_profile = {
+    name       = "default"
+    namespaces = ["kube-system", "default"]
+  }
 }
 
 module "ebp_vpc" {
@@ -77,13 +83,10 @@ module "ebp_eks" {
 
   fargate_profiles = {
     default = {
-      name = "default"
+      name = local.fargate_profile.name
       selectors = [
-        {
-          namespace = "kube-system"
-        },
-        {
-          namespace = "default"
+        for namespace in local.fargate_profile.namespaces : {
+          namespace = namespace
         }
       ]
     }
