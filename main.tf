@@ -55,11 +55,16 @@ locals {
   cluster_name    = "ebp-eks"
   cluster_version = "1.27"
   fargate_profile = {
-    name       = "default"
-    namespaces = ["kube-system", "default"]
+    name = "default"
+    namespaces = [
+      "kube-system",
+      "default",
+      "karpenter"
+    ]
   }
 }
 
+# AWS
 module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.1.2"
@@ -148,4 +153,67 @@ module "karpenter_aws" {
 
   irsa_oidc_provider_arn          = module.eks.oidc_provider_arn
   irsa_namespace_service_accounts = ["karpenter:karpenter"]
+}
+
+# Helm
+# ref https://karpenter.sh/docs/getting-started/getting-started-with-karpenter/#4-install-karpenter
+# helm registry logout public.ecr.aws
+# helm upgrade --install karpenter oci://public.ecr.aws/karpenter/karpenter --version ${KARPENTER_VERSION} --namespace karpenter --create-namespace \
+#   --set serviceAccount.annotations."eks\.amazonaws\.com/role-arn"=${KARPENTER_IAM_ROLE_ARN} \
+#   --set settings.aws.clusterName=${CLUSTER_NAME} \
+#   --set settings.aws.defaultInstanceProfile=KarpenterNodeInstanceProfile-${CLUSTER_NAME} \
+#   --set settings.aws.interruptionQueueName=${CLUSTER_NAME} \
+#   --set controller.resources.requests.cpu=1 \
+#   --set controller.resources.requests.memory=1Gi \
+#   --set controller.resources.limits.cpu=1 \
+#   --set controller.resources.limits.memory=1Gi \
+#   --wait
+
+resource "helm_release" "karpenter" {
+  name             = "karpenter"
+  namespace        = "karpenter"
+  create_namespace = true
+  repository       = "oci://public.ecr.aws/karpenter"
+  chart            = "karpenter"
+  version          = "v0.30.0"
+
+  set {
+    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
+    value = module.karpenter_aws.irsa_arn
+  }
+
+  set {
+    name  = "settings.aws.clusterName"
+    value = module.eks.cluster_name
+  }
+
+  set {
+    name  = "settings.aws.defaultInstanceProfile"
+    value = "KarpenterNodeInstanceProfile-${module.eks.cluster_name}"
+  }
+
+  set {
+    name  = "settings.aws.interruptionQueueName"
+    value = module.eks.cluster_name
+  }
+
+  set {
+    name  = "controller.resources.requests.cpu"
+    value = "1"
+  }
+
+  set {
+    name  = "controller.resources.requests.memory"
+    value = "1Gi"
+  }
+
+  set {
+    name  = "controller.resources.limits.cpu"
+    value = "1"
+  }
+
+  set {
+    name  = "controller.resources.limits.memory"
+    value = "1Gi"
+  }
 }
