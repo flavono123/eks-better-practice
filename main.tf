@@ -19,22 +19,22 @@ terraform {
 }
 
 provider "kubernetes" {
-  host                   = module.ebp_eks.cluster_endpoint
-  cluster_ca_certificate = base64decode(module.ebp_eks.cluster_certificate_authority_data)
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
   exec {
     api_version = "client.authentication.k8s.io/v1beta1"
-    args        = ["eks", "get-token", "--cluster-name", module.ebp_eks.cluster_name]
+    args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
     command     = "aws"
   }
 }
 
 provider "helm" {
   kubernetes {
-    host                   = module.ebp_eks.cluster_endpoint
-    cluster_ca_certificate = base64decode(module.ebp_eks.cluster_certificate_authority_data)
+    host                   = module.eks.cluster_endpoint
+    cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
     exec {
       api_version = "client.authentication.k8s.io/v1beta1"
-      args        = ["eks", "get-token", "--cluster-name", module.ebp_eks.cluster_name]
+      args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_name]
       command     = "aws"
     }
   }
@@ -60,7 +60,7 @@ locals {
   }
 }
 
-module "ebp_vpc" {
+module "vpc" {
   source  = "terraform-aws-modules/vpc/aws"
   version = "~> 5.1.2"
 
@@ -86,15 +86,15 @@ module "ebp_vpc" {
   }
 }
 
-module "ebp_eks" {
+module "eks" {
   source  = "terraform-aws-modules/eks/aws"
   version = "~> 19.16.0"
 
   cluster_name    = local.cluster_name
   cluster_version = local.cluster_version
 
-  vpc_id     = module.ebp_vpc.vpc_id
-  subnet_ids = module.ebp_vpc.private_subnets
+  vpc_id     = module.vpc.vpc_id
+  subnet_ids = module.vpc.private_subnets
 
   cluster_endpoint_public_access = true
   cluster_addons = {
@@ -144,8 +144,8 @@ module "karpenter" {
   source  = "terraform-aws-modules/eks/aws//modules/karpenter"
   version = "~> 19.16.0"
 
-  cluster_name = module.ebp_eks.cluster_name
+  cluster_name = module.eks.cluster_name
 
-  irsa_oidc_provider_arn          = module.ebp_eks.oidc_provider_arn
+  irsa_oidc_provider_arn          = module.eks.oidc_provider_arn
   irsa_namespace_service_accounts = ["karpenter:karpenter"]
 }
