@@ -126,7 +126,7 @@ module "eks" {
   manage_aws_auth_configmap = true
   aws_auth_roles = [
     {
-      rolearn  = module.karpenter.role_arn
+      rolearn  = module.karpenter_aws.role_arn
       username = "system:node:{{EC2PrivateDNSName}}"
       groups = [
         "system:bootstrappers",
@@ -140,7 +140,7 @@ module "eks" {
   }
 }
 
-module "karpenter" {
+module "karpenter_aws" {
   source  = "terraform-aws-modules/eks/aws//modules/karpenter"
   version = "~> 19.16.0"
 
