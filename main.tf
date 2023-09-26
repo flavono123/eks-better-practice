@@ -207,3 +207,16 @@ resource "helm_release" "argocd" {
   chart            = "argo-cd"
   version          = "5.46.7"
 }
+
+resource "helm_release" "cluster_bootstrapping" {
+  name             = "cluster-bootstrapping"
+  namespace        = "argocd"
+  create_namespace = true
+  repository       = "https://argoproj.github.io/argo-helm"
+  chart            = "argocd-apps"
+  version          = "1.4.1"
+
+  values = [
+    "${file("${path.module}/cluster-bootstrapping-values.yaml")}"
+  ]
+}

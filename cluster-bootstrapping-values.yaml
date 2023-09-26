@@ -1,0 +1,26 @@
+applications:
+- name: karpenter
+  project: default
+  source:
+    repoURL: https://github.com/flavono123/eks-better-practice.git
+    path: gitops
+  destination:
+    server: https://kubernetes.default.svc
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+- name: guestbook
+  project: default
+  source:
+    repoURL: https://github.com/argoproj/argocd-example-apps.git
+    path: guestbook
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: guestbook
+  syncPolicy:
+    automated:
+      prune: false
+      selfHeal: false
+    syncOptions:
+    - CreateNamespace=true

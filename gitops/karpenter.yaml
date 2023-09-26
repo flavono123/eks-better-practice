@@ -1,0 +1,20 @@
+---
+# awsnodetemplate
+apiVersion: karpenter.k8s.aws/v1alpha1
+kind: AWSNodeTemplate
+metadata:
+  name: default
+spec:
+  subnetSelector:
+    Name: ebp-vpc-private-ap-northeast-2a,ebp-vpc-private-ap-northeast-2b # TODO: template or dynamic gen
+  securityGroupSelector:
+    Name: ebp-eks-node # TODO: template or dynamic gen
+---
+# provisioner
+apiVersion: karpenter.sh/v1alpha5
+kind: Provisioner
+metadata:
+  name: default
+spec:
+  providerRef:
+    name: default
