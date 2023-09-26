@@ -62,6 +62,20 @@ locals {
       "karpenter"
     ]
   }
+
+  helm_values = {
+    # TODO: replace to argocd
+    karpenter = {
+      "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn" = module.karpenter_aws.irsa_arn
+      "settings.aws.clusterName"                                  = module.eks.cluster_name
+      "settings.aws.defaultInstanceProfile"                       = "KarpenterNodeInstanceProfile-${module.eks.cluster_name}"
+      "settings.aws.interruptionQueueName"                        = module.eks.cluster_name
+      "controller.resources.requests.cpu"                         = "1"
+      "controller.resources.requests.memory"                      = "1Gi"
+      "controller.resources.limits.cpu"                           = "1"
+      "controller.resources.limits.memory"                        = "1Gi"
+    }
+  }
 }
 
 # AWS
@@ -177,43 +191,11 @@ resource "helm_release" "karpenter" {
   chart            = "karpenter"
   version          = "v0.30.0"
 
-  set {
-    name  = "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn"
-    value = module.karpenter_aws.irsa_arn
-  }
-
-  set {
-    name  = "settings.aws.clusterName"
-    value = module.eks.cluster_name
-  }
-
-  set {
-    name  = "settings.aws.defaultInstanceProfile"
-    value = "KarpenterNodeInstanceProfile-${module.eks.cluster_name}"
-  }
-
-  set {
-    name  = "settings.aws.interruptionQueueName"
-    value = module.eks.cluster_name
-  }
-
-  set {
-    name  = "controller.resources.requests.cpu"
-    value = "1"
-  }
-
-  set {
-    name  = "controller.resources.requests.memory"
-    value = "1Gi"
-  }
-
-  set {
-    name  = "controller.resources.limits.cpu"
-    value = "1"
-  }
-
-  set {
-    name  = "controller.resources.limits.memory"
-    value = "1Gi"
+  dynamic "set" {
+    for_each = local.helm_values.karpenter
+    content {
+      name  = set.key
+      value = set.value
+    }
   }
 }
