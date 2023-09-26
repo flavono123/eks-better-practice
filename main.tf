@@ -93,17 +93,15 @@ module "vpc" {
 
   private_subnet_tags = {
     "kubernetes.io/role/internal-elb" = 1
+    "karpenter.sh/discovery"          = local.cluster_name
   }
   public_subnet_tags = {
     "kubernetes.io/role/elb" = 1
+    "karpenter.sh/discovery" = local.cluster_name
   }
 
   enable_nat_gateway = true
   single_nat_gateway = true
-
-  tags = {
-    Name = local.vpc_name
-  }
 }
 
 module "eks" {
@@ -155,8 +153,8 @@ module "eks" {
     }
   ]
 
-  tags = {
-    Name = local.cluster_name
+  node_security_group_tags = {
+    "karpenter.sh/discovery" = local.cluster_name
   }
 }
 
@@ -200,7 +198,6 @@ resource "helm_release" "karpenter" {
     }
   }
 }
-
 
 resource "helm_release" "argocd" {
   name             = "argocd"
