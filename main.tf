@@ -69,8 +69,8 @@ locals {
     karpenter = {
       "serviceAccount.annotations.eks\\.amazonaws\\.com/role-arn" = module.karpenter_aws.irsa_arn
       "settings.aws.clusterName"                                  = module.eks.cluster_name
-      "settings.aws.defaultInstanceProfile"                       = "KarpenterNodeInstanceProfile-${module.eks.cluster_name}"
-      "settings.aws.interruptionQueueName"                        = module.eks.cluster_name
+      "settings.aws.defaultInstanceProfile"                       = module.karpenter_aws.instance_profile_name
+      "settings.aws.interruptionQueueName"                        = module.karpenter_aws.queue_name
       "controller.resources.requests.cpu"                         = "1"
       "controller.resources.requests.memory"                      = "1Gi"
       "controller.resources.limits.cpu"                           = "1"
