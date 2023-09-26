@@ -6,9 +6,13 @@ metadata:
   name: default
 spec:
   subnetSelector:
+    karpenter.sh/discovery: ebs-eks
     Name: ebp-vpc-private-ap-northeast-2a,ebp-vpc-private-ap-northeast-2b # TODO: template or dynamic gen
   securityGroupSelector:
+    karpenter.sh/discovery: ebs-eks
     Name: ebp-eks-node # TODO: template or dynamic gen
+  tags:
+    karpenter.sh/discovery: ebs-eks
 ---
 # provisioner
 apiVersion: karpenter.sh/v1alpha5
@@ -18,3 +22,18 @@ metadata:
 spec:
   providerRef:
     name: default
+  requirements:
+  - key: karpenter.sh/capacity-type
+    operator: In
+    values:
+    - spot
+  - key: karpenter.k8s.aws/instance-family
+    operator: In
+    values:
+    - t4g
+  - key: kubernetes.io/arch
+    operator: In
+    values:
+    - amd64
+  consolidation:
+    enabled: true
