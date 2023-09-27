@@ -168,6 +168,10 @@ module "karpenter_aws" {
   irsa_namespace_service_accounts = ["karpenter:karpenter"]
 }
 
+resource "aws_iam_service_linked_role" "ec2spot" {
+  aws_service_name = "spot.amazonaws.com"
+}
+
 # Helm
 # ref https://karpenter.sh/docs/getting-started/getting-started-with-karpenter/#4-install-karpenter
 # helm registry logout public.ecr.aws
