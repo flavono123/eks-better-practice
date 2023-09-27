@@ -1,8 +1,8 @@
 # AWS EKS Better Practice with Terraform
 
-## Update kubeconfig **frequently**
+## Update **frequently**(break points)
 
-### Pre-requisite
+### Kubeconfig(Pre-requisite)
 
 - awscli
 - kubectx
@@ -38,3 +38,26 @@ Implement [EKS workshop](https://www.eksworkshop.com/)'s each part
   - [ ] [Karpenter](https://www.eksworkshop.com/docs/autoscaling/compute/karpenter/)
   - [ ] [Horizontal Pod Autoscaler](https://www.eksworkshop.com/docs/autoscaling/workloads/horizontal-pod-autoscaler/)
   - [ ] [Cluster Proportional Autoscaler](https://www.eksworkshop.com/docs/autoscaling/workloads/cluster-proportional-autoscaler/)
+
+## Diagrams
+
+### Two-steps of Provisioning
+
+![one-two-prov](img/one-two-prov.png)
+
+- One provisionig with Terraform
+  - VPC
+  - EKS cluster
+  - Karpenter(AWS' things)
+  - Helm
+    - Karpenter
+    - ArgoCD
+- Two provisioning with ArgoCD
+  - Karpenter things
+    - AWSNodeTemplates
+    - Provisioners
+  - Sample applications
+
+How to connect two steps?
+
+- Terraform outputs should be passed Helm(ArgoCD) values.
