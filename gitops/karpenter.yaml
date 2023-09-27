@@ -6,13 +6,13 @@ metadata:
   name: default
 spec:
   subnetSelector:
-    karpenter.sh/discovery: ebs-eks
+    karpenter.sh/discovery: ebp-eks
     Name: "ebp-vpc-private-ap-northeast-2*" # TODO: template or dynamic gen
   securityGroupSelector:
-    karpenter.sh/discovery: ebs-eks
+    karpenter.sh/discovery: ebp-eks
     Name: ebp-eks-node # TODO: template or dynamic gen
   tags:
-    karpenter.sh/discovery: ebs-eks
+    karpenter.sh/discovery: ebp-eks
 ---
 # provisioner
 apiVersion: karpenter.sh/v1alpha5
