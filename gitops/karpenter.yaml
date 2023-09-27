@@ -34,6 +34,14 @@ spec:
   - key: kubernetes.io/arch
     operator: In
     values:
-    - amd64
+    - arm64
+  - key: kubernetes.io/os
+    operator: In
+    values:
+    - linux
   consolidation:
     enabled: true
+  limits:
+    resources:
+      cpu: "6"
+      memory: 24Gi
