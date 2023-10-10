@@ -173,6 +173,7 @@ resource "aws_iam_service_linked_role" "ec2spot" {
 }
 
 # Helm
+
 # ref https://karpenter.sh/docs/getting-started/getting-started-with-karpenter/#4-install-karpenter
 # helm registry logout public.ecr.aws
 # helm upgrade --install karpenter oci://public.ecr.aws/karpenter/karpenter --version ${KARPENTER_VERSION} --namespace karpenter --create-namespace \
@@ -185,8 +186,9 @@ resource "aws_iam_service_linked_role" "ec2spot" {
 #   --set controller.resources.limits.cpu=1 \
 #   --set controller.resources.limits.memory=1Gi \
 #   --wait
-
 resource "helm_release" "karpenter" {
+  depends_on = [module.eks]
+
   name             = "karpenter"
   namespace        = "karpenter"
   create_namespace = true
@@ -204,6 +206,8 @@ resource "helm_release" "karpenter" {
 }
 
 resource "helm_release" "argocd" {
+  depends_on = [module.eks]
+
   name             = "argocd"
   namespace        = "argocd"
   create_namespace = true
@@ -213,6 +217,8 @@ resource "helm_release" "argocd" {
 }
 
 resource "helm_release" "cluster_bootstrapping" {
+  depends_on = [helm_release.argocd]
+
   name             = "cluster-bootstrapping"
   namespace        = "argocd"
   create_namespace = true
